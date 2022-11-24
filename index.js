@@ -42,6 +42,11 @@ async function run() {
         app.get("/category/:category", async (req, res) => {
             const category = req.params.category
             let query = {category};
+            // if (req.params.category) {
+            //     query = {
+            //         category: req.query.category
+            //     }
+            // }
             const cursor = productsCollection.find(query);
             const product = await cursor.toArray();
             res.send(product);
