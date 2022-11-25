@@ -93,30 +93,61 @@ async function run() {
             const users = await usersCollection.find(query).toArray();
             res.send(users);
         });
-        app.get("/users/admin/:email",async(req,res)=>{
+        app.get("/users/admin/:email", async (req, res) => {
             const email = req.params.email;
-            const query= {email};
+            const query = { email };
             const user = await usersCollection.findOne(query);
-            res.send({isAdmin: user?.role === "admin"});
+            res.send({ isAdmin: user?.role === "admin" });
         })
-        app.put("/users/admin/:id",verifyJWT, async (req, res) => {
+        app.put("/users/admin/:id", verifyJWT, async (req, res) => {
             const decodedEmail = req.decoded.email;
-            const query = {email: decodedEmail};
+            const query = { email: decodedEmail };
             const user = await usersCollection.findOne(query);
-            if(user.role !== "admin"){
-                res.status(403).send({message: "forbidden access"})
+            if (user.role !== "admin") {
+                res.status(403).send({ message: "forbidden access" })
             }
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true }
             const updatedDoc = {
                 $set: {
-                    role: "admin"
+                    verify: "verified"
                 }
-                
+
             }
-            const result = await usersCollection.updateOne(filter,updatedDoc,options)
+            const result = await usersCollection.updateOne(filter, updatedDoc, options)
+        });
+        app.delete("/users/admin/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = ({ _id: ObjectId(id) })
+            const result = await usersCollection.deleteOne(query);
+            if (result.deletedCount === 1) {
+                console.log("Successfully deleted one document.");
+            } else {
+                console.log("No documents matched the query. Deleted 0 documents.");
+            }
+            res.send(result)
+        });
+        app.put("/users/salers:id",async(req,res)=>{
+            const id =req.params.id;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true}
+            const updatedDoc={
+                $set: {
+                    role: "seller"
+                }
+            }
+            const result= await usersCollection.updateOne(filter,updatedDoc,options);
+            res.send(result);
+        });
+
+        app.get("/users/seller/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await usersCollection.findOne(query);
+            res.send({ isSeller: user?.role === "seller" });
         })
+
         app.post("/booking", async (req, res) => {
             const user = req.body;
             const result = await bookingCollection.insertOne(user);
