@@ -42,7 +42,7 @@ async function run() {
         const usersCollection = client.db("gadgetAndgears").collection("users");
         const bookingCollection = client.db("gadgetAndgears").collection("booking");
 
-// jwt token api 
+        // jwt token api 
         app.get("/jwt", async (req, res) => {
             const email = req.query.email;
             const query = { email: email }
@@ -54,20 +54,20 @@ async function run() {
             console.log(user)
             res.status(403).send({ accessToken: "" })
         })
-// get all category from collection 
+        // get all category from collection 
         app.get("/category", async (req, res) => {
             const query = {}
             const result = await serviceCollection.find(query).toArray();
             res.send(result)
         });
-// get all products by category from collection 
+        // get all products by category from collection 
         app.get("/service/:category", async (req, res) => {
             const category = req.params.category;
             const query = ({ category })
             const result = await serviceCollection.find(query).toArray();
             res.send(result)
         });
-// category posted by seller from client site 
+        // category posted by seller from client site 
         app.post("/category/allCategories", async (req, res) => {
             const query = req.body;
             const result = await productsCollection.insertOne(query);
@@ -81,9 +81,29 @@ async function run() {
             const product = await cursor.toArray();
             res.send(product);
         });
+
+        app.get("/advertise-products", async(req, res) => {
+            const query = {advertisement: true}
+            const advertiseProducts = await productsCollection.find(query).toArray()
+            res.send(advertiseProducts)
+        })
+
+        app.patch("/products/advertise/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const updateInfo = {
+                $set: {
+                    advertisement: true
+                }
+            }
+            const updated = await productsCollection.updateOne(query, updateInfo)
+            res.send(updated)
+        })
+
+
         app.get("/seller/product/:email", async (req, res) => {
             const email = req.params.email;
-            const query = {userEmail: email };
+            const query = { userEmail: email };
             console.log(query)
             const cursor = productsCollection.find(query);
             const product = await cursor.toArray();
@@ -93,12 +113,12 @@ async function run() {
         app.put("/users/:email", async (req, res) => {
             const email = req.params.email;
             const user = req.body;
-            const filter = {email};
-            options = {upsert: true};
-            const updatedDoc={
-                $set:{
-                    name:user.name,
-                    email:user.email,
+            const filter = { email };
+            options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    name: user.name,
+                    email: user.email,
                     userType: user.userType,
                 }
             };
@@ -125,13 +145,22 @@ async function run() {
             res.send({ isAdmin: user?.role === "admin" });
         });
         // make a api for buyer role user 
+        // app.get("/users/buyer/:email", async (req, res) => {
+        //     const email = req.params.email;
+        //     const query = { email };
+        //     const user = await usersCollection.findOne(query);
+        //     res.send({ isBuyer: user?.userType === "Buyer" });
+        // });
+        // // make a api for seller role user 
+
         app.get("/users/buyer/:email", async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await usersCollection.findOne(query);
             res.send({ isBuyer: user?.userType === "Buyer" });
-        });
-        // make a api for seller role user 
+            console.log(user)
+        })
+
         app.get("/users/seller/:email", async (req, res) => {
             const email = req.params.email;
             const query = { email };
@@ -158,7 +187,7 @@ async function run() {
             }
             const result = await usersCollection.updateOne(filter, updatedDoc, options)
         });
-// delet a user(seller or buyer) by admin 
+        // delet a user(seller or buyer) by admin 
         app.delete("/users/admin/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = ({ _id: ObjectId(id) })
@@ -170,7 +199,14 @@ async function run() {
             }
             res.send(result)
         });
-// api for for post booking info from client site 
+        // api for delete my products elements 
+        app.delete("/product/seller/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = ({ _id: ObjectId(id) })
+            const result = await productsCollection.deleteOne(query);
+            res.send(result)
+        });
+        // api for for post booking info from client site 
         app.post("/booking", async (req, res) => {
             const user = req.body;
             const result = await bookingCollection.insertOne(user);
