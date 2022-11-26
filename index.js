@@ -61,6 +61,21 @@ async function run() {
             res.send(result)
         });
         // get all products by category from collection 
+        app.get("/products", async (req, res) => {
+            const categoryName = req.query.category;
+            const query = { category: categoryName };
+            const products = await productsCollection.find(query).toArray();
+            res.send(products);
+          });
+        app.get("/categories/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const categories = await serviceCollection.findOne(query);
+            res.send(categories);
+        });
+
+        //klhjfoshojskld//dkslfhklsdjfk//
+
         app.get("/service/:category", async (req, res) => {
             const category = req.params.category;
             const query = ({ category })
@@ -82,8 +97,8 @@ async function run() {
             res.send(product);
         });
 
-        app.get("/advertise-products", async(req, res) => {
-            const query = {advertisement: true}
+        app.get("/advertise-products", async (req, res) => {
+            const query = { advertisement: true }
             const advertiseProducts = await productsCollection.find(query).toArray()
             res.send(advertiseProducts)
         })
@@ -145,14 +160,6 @@ async function run() {
             res.send({ isAdmin: user?.role === "admin" });
         });
         // make a api for buyer role user 
-        // app.get("/users/buyer/:email", async (req, res) => {
-        //     const email = req.params.email;
-        //     const query = { email };
-        //     const user = await usersCollection.findOne(query);
-        //     res.send({ isBuyer: user?.userType === "Buyer" });
-        // });
-        // // make a api for seller role user 
-
         app.get("/users/buyer/:email", async (req, res) => {
             const email = req.params.email;
             const query = { email };
@@ -220,6 +227,13 @@ async function run() {
             }
             const query = { email: email };
             const booking = await bookingCollection.find(query).toArray();
+            res.send(booking)
+        });
+        // Api for payment 
+        app.get("/bookings/:id",async(req,res)=>{
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const booking = await bookingCollection.findOne(query);
             res.send(booking)
         })
 
