@@ -81,6 +81,14 @@ async function run() {
             const product = await cursor.toArray();
             res.send(product);
         });
+        app.get("/seller/product/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = {userEmail: email };
+            console.log(query)
+            const cursor = productsCollection.find(query);
+            const product = await cursor.toArray();
+            res.send(product);
+        });
         // create user by login google and save on user collections 
         app.put("/users/:email", async (req, res) => {
             const email = req.params.email;
